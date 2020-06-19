@@ -24,7 +24,10 @@ def start(message):
 # обработака /help
 @bot.message_handler(commands=['help'])
 def start(message):
-    pass
+    bot.send_message(message.chat.id,"""
+Столкнулись с проблемой?
+- Напишите в нашу службу поддержки: @lic_manager
+    """)
 
 
 # Обработка текста
