@@ -2,10 +2,44 @@ import telebot
 from telebot import types
 import requests
 import sqlite3
-import smtplib
 import threading
+import time
+import bs4
 
-import parser
+
+# Функция парсера
+def parser():
+    pass
+
+
+# Создание пользователя
+def create_user(id,city):
+    user = [id, city, "ALL"]
+    con = sqlite3.connect("database.db")
+    cur = con.cursor()
+    cur.execute("INSERT INTO user(user_id,city,push) VALUES(?,?,?)", user)
+    con.commit()
+    cur.close()
+    con.close()
+
+
+
+# Чтение информации о пользователе
+def read_user(id):
+    con = sqlite3.connect("database.db")
+    cur = con.cursor()
+    cur.execute(f"SELECT push FROM user WHERE user_id = {id}")
+    push, = cur.fetchone()
+    cur.close()
+    con.close()
+    return push
+
+
+# Обновление данных о пользователе
+def update_user(id,push):
+    pass
+
+
 
 # user_id администратора бота.
 admin_id = "270943665"
@@ -18,7 +52,11 @@ print("bot start...")
 def start(message):
     menu = types.ReplyKeyboardMarkup(True, False)
     menu.row("Профиль","Разместить объявление")
-    bot.send_message(message.chat.id, "Привет!", reply_markup = menu)
+    bot.send_message(message.chat.id, f"""
+Приветствую тебя,{message.from_user.first_name}.
+
+Я фермер Mr. Foodsharing , добро пожаловать на мою ферму.
+    """, reply_markup = menu)
 
 
 # обработака /help
