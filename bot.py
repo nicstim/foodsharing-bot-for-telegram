@@ -1,36 +1,42 @@
 import telebot
 from telebot import types
-from telebot.types import LabeledPrice, ShippingOption
 import requests
 import sqlite3
+import smtplib
 
 import parser
 
+# user_id администратора бота.
+admin_id = "270943665"
+
+bot = telebot.TeleBot("1197512104:AAFbg4You7T1DHUOr3Ocklz4Z94qXtfHgoY")
+
 print("bot start...")
+# обработака /start
 @bot.message_handler(commands=['start'])
+def start(message):
+    menu = types.ReplyKeyboardMarkup(True, False)
+    menu.row("Профиль","Разместить объявление")
+    bot.send_message(message.chat.id, "Привет!", reply_markup = menu)
+
+
+# обработака /help
+@bot.message_handler(commands=['help'])
 def start(message):
     pass
 
 
+# Обработка текста
 @bot.message_handler(content_types=['text'])
 def body(message):
     pass
 
 
-@bot.pre_checkout_query_handler(func=lambda query: True)
-def checkout(pre_checkout_query):
-    bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
-                                  error_message="Что-то пошло не так."
-                                                " Повторите попытку позже.")
-
-
-@bot.message_handler(content_types=['successful_payment'])
-def got_payment(message):
-    bot.send_message(message.chat.id,
-                     'Вы успешно сделали транзакцию на `{} {}`! '.format(message.successful_payment.total_amount / 100, message.successful_payment.currency),
-                     parse_mode='Markdown')
-
-
+# обработка callback
 @bot.callback_query_handler(func=lambda c: True)
 def inline(c):
     pass
+
+
+bot.skip_pending = True
+bot.polling(none_stop=True, interval=0)
