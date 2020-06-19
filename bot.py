@@ -4,7 +4,6 @@ import requests
 import sqlite3
 import threading
 import time
-# import bs4
 
 fruits = ["яблоко", "бананы", "груша"]
 vegetables = ["помидоры", "огурцы", "огурец"]
