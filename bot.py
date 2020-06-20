@@ -7,28 +7,104 @@ import time
 
 
 def take_posts():
+    global img_url
     token = '66efa73366efa73366efa733ea669d17a7666ef66efa73338034d48ba775c8f77625403'
     version = 5.92
-    domain = 'foodsharing_spb'
-    count = 10
-    offset = 0
+    domain = 'sharingfood'
+    count = 5
+    offset = 1
     all_posts = []
 
-    while offset < 10:
-        response = requests.get('https://api.vk.com/method/wall.get',
-                                params={
-                                    'access_token': token,
-                                    'v': version,
-                                    'domain': domain,
-                                    'count': count,
-                                    'offset': offset
-                                }
-                            )
+    while True:
+        while offset < 10:
+            response = requests.get('https://api.vk.com/method/wall.get',
+                                    params={
+                                        'access_token': token,
+                                        'v': version,
+                                        'domain': domain,
+                                        'count': count,
+                                        'offset': offset
+                                    }
+                                )
+            data = response.json()['response']['items']
 
-        data = response.json()['response']['items']
-        offset += 100
-        all_posts.extend(data)
-    return all_posts
+            offset += 10
+            all_posts.extend(data)
+        for post in data:
+            try:
+                if post['attachments'][0]['type']:
+                    img_url = post['attachments'][0]['photo']['sizes'][-1]['url']
+                else:
+                    img_url = 'pass'
+            except:
+                img_url = 'pass'
+            if "спб" or "питер"or "санк-петербург" in post["text"].lower():
+                print('spb')
+                con = sqlite3.connect("database.db")
+                cur = con.cursor()
+                cur.execute("SELECT user_id FROM user WHERE city = 'Санкт-Петербург'")
+                users_id = cur.fetchall()
+                cur.close()
+                con.close()
+                for i in range(0,len(users_id),1):
+                    id = str(users_id[i])
+                    for char in id:
+                        if char == ',' or char == '(' or char == ')' or char == "'":
+                            id = id.replace(char,'')
+                        else:
+                            pass
+                    try:
+                        try:
+                            call_b = types.InlineKeyboardMarkup(row_width=1)
+                            # btn1 = types.InlineKeyboardButton(text='Связаться', callback_data="hhh" )
+                            btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['from_id']}" )
+                            call_b.add(btn1)
+                            try:
+                                bot.send_message(id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
+                            except:
+                                bot.send_message(id,f'{post["text"]}\n\n\n',parse_mode = "html" , reply_markup = call_b)
+                        except Exception as e:
+                            print(e)
+
+                    except Exception as e:
+                        print(e)
+            else:
+                pass
+
+            if "мск" or "москв"or "м.о." in post["text"].lower():
+                print("msk")
+                con = sqlite3.connect("database.db")
+                cur = con.cursor()
+                cur.execute("SELECT user_id FROM user WHERE city = 'Москва'")
+                users_id = cur.fetchall()
+                cur.close()
+                con.close()
+                for i in range(0,len(users_id),1):
+                    msk_id = str(users_id[i])
+                    for char in id:
+                        if char == ',' or char == '(' or char == ')' or char == "'":
+                            id = id.replace(char,'')
+                        else:
+                            pass
+                    try:
+                        call_b = types.InlineKeyboardMarkup(row_width=1)
+                        # btn1 = types.InlineKeyboardButton(text='Связаться', callback_data="hhh" )
+                        btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['from_id']}" )
+                        call_b.add(btn1)
+
+                        try:
+                            bot.send_message(msk_id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
+                        except:
+                            bot.send_message(msk_id,f'{post["text"]}\n\n\n',parse_mode = "html" , reply_markup = call_b)
+
+                    except Exception as e:
+                        print(e)
+            else:
+                pass
+
+        time.sleep(600)
+
+
 
 
 fruits = ["яблоко", "бананы", "груша"]
@@ -48,13 +124,32 @@ def create_user(id,city):
 
 # Чтение информации о пользователе
 def read_user(id):
+    global push
+    global radius
+    global city
+    global longitude
+    global latitude
     con = sqlite3.connect("database.db")
     cur = con.cursor()
+
+    # push
     cur.execute(f"SELECT push FROM user WHERE user_id = {id}")
     push, = cur.fetchone()
+    # radius
+    cur.execute(f"SELECT radius FROM user WHERE user_id = {id}")
+    radius, = cur.fetchone()
+    # city
+    cur.execute(f"SELECT city FROM user WHERE user_id = {id}")
+    city, = cur.fetchone()
+    # longitude
+    cur.execute(f"SELECT longitude FROM user WHERE user_id = {id}")
+    longitude, = cur.fetchone()
+    # latitude
+    cur.execute(f"SELECT latitude FROM user WHERE user_id = {id}")
+    latitude, = cur.fetchone()
+
     cur.close()
     con.close()
-    return push
 
 
 # Получение user_id всех пользователей
@@ -80,7 +175,8 @@ def parser():
 
 print("bot start...")
 
-# t_0 = threading.Thread(target = parser, name = "Парсер", args = (id,))
+t_0 = threading.Thread(target = take_posts, name = "Парсер", args = ())
+t_0.start()
 
 # обработака /start
 @bot.message_handler(commands=['start'])
@@ -98,23 +194,6 @@ def start(message):
 Меня зовут Mr. Foodsharing , добро пожаловать на мою ферму.
     """, reply_markup = set_city)
 
-    # data = take_posts()
-    # for post in data:
-    #     try:
-    #         if post['attachments'][0]['type']:
-    #             img_url = post['attachments'][0]['photo']['sizes'][-1]['url']
-    #         else:
-    #             img_url = 'pass'
-    #     except:
-    #         pass
-    #     call_b = types.InlineKeyboardMarkup(row_width=1)
-    #     btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
-    #     call_b.add(btn1)
-    #     try:
-    #         bot.send_message(message.chat.id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
-    #     except:
-    #         bot.send_message(message.chat.id,f'{post["text"]}\n\n\n',parse_mode = "html" , reply_markup = call_b)
-
 
 # обработака /help
 @bot.message_handler(commands=['help'])
@@ -131,6 +210,7 @@ def start(message):
 def body(message):
     if message.text == "Профиль":
         pass
+
     elif message.text == "Разместить объявление":
         pass
 
@@ -139,7 +219,9 @@ def body(message):
 @bot.message_handler(content_types=['location'])
 def location(local):
     if local:
-        bot.send_message(local.from_user.id,local.location)
+        long = local.location.longitude
+        lat = local.location.latitude
+        bot.send_message(local.from_user.id,f"Ваше местоположение определенно.\n Широта: {lat} Долгота: {long}")
 
 
 
