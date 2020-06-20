@@ -5,6 +5,32 @@ import sqlite3
 import threading
 import time
 
+
+def take_posts():
+    token = '66efa73366efa73366efa733ea669d17a7666ef66efa73338034d48ba775c8f77625403'
+    version = 5.92
+    domain = 'foodsharing_spb'
+    count = 10
+    offset = 0
+    all_posts = []
+
+    while offset < 10:
+        response = requests.get('https://api.vk.com/method/wall.get',
+                                params={
+                                    'access_token': token,
+                                    'v': version,
+                                    'domain': domain,
+                                    'count': count,
+                                    'offset': offset
+                                }
+                            )
+
+        data = response.json()['response']['items']
+        offset += 100
+        all_posts.extend(data)
+    return all_posts
+
+
 fruits = ["яблоко", "бананы", "груша"]
 vegetables = ["помидоры", "огурцы", "огурец"]
 
@@ -67,11 +93,19 @@ def start(message):
 Меня зовут Mr. Foodsharing , добро пожаловать на мою ферму.
     """, reply_markup = menu)
 
-    adm = types.InlineKeyboardMarkup(row_width=2)
-    btn1 = types.InlineKeyboardButton(text='Создать промокод', callback_data=f"promo")
-    adm.add(btn1)
-    adm.add(btn1, btn1)
-    bot.send_message(message.chat.id, message.from_user,reply_markup = adm )
+    data = take_posts()
+    for post in data:
+        try:
+            if post['attachments'][0]['type']:
+                img_url = post['attachments'][0]['photo']['sizes'][-1]['url']
+            else:
+                img_url = 'pass'
+        except:
+            pass
+        call_b = types.InlineKeyboardMarkup(row_width=1)
+        btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
+        call_b.add(btn1)
+        bot.send_message(message.chat.id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
 
 
 # обработака /help
