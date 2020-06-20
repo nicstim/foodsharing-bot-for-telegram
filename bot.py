@@ -85,6 +85,7 @@ t_0 = threading.Thread(target = parser, name = "Парсер", args = (id,))
 # обработака /start
 @bot.message_handler(commands=['start'])
 def start(message):
+    global img_url
     menu = types.ReplyKeyboardMarkup(True, False)
     menu.row("Профиль","Разместить объявление")
     bot.send_message(message.chat.id, f"""
@@ -105,7 +106,10 @@ def start(message):
         call_b = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
         call_b.add(btn1)
-        bot.send_message(message.chat.id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
+        try:
+            bot.send_message(message.chat.id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
+        except:
+            bot.send_message(message.chat.id,f'{post["text"]}\n\n\n',parse_mode = "html" , reply_markup = call_b)
 
 
 # обработака /help
