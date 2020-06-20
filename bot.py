@@ -36,10 +36,10 @@ vegetables = ["помидоры", "огурцы", "огурец"]
 
 # Создание пользователя
 def create_user(id,city):
-    user = [id, city, "ALL"]
+    user = [id, city, "ALL", "None", "None", "None"]
     con = sqlite3.connect("database.db")
     cur = con.cursor()
-    cur.execute("INSERT INTO user(user_id,city,push) VALUES(?,?,?)", user)
+    cur.execute("INSERT INTO user(user_id,city,push,longitude,latitude,radius) VALUES(?,?,?,?,?,?)", user)
     con.commit()
     cur.close()
     con.close()
@@ -80,36 +80,40 @@ def parser():
 
 print("bot start...")
 
-t_0 = threading.Thread(target = parser, name = "Парсер", args = (id,))
+# t_0 = threading.Thread(target = parser, name = "Парсер", args = (id,))
 
 # обработака /start
 @bot.message_handler(commands=['start'])
 def start(message):
     global img_url
     menu = types.ReplyKeyboardMarkup(True, False)
-    menu.row("Профиль","Разместить объявление")
+    # menu.row("Профиль","Разместить объявление")
+    set_city = types.InlineKeyboardMarkup(row_width = 2)
+    spb = types.InlineKeyboardButton(text = "Санк-Петербург", callback_data = "spb")
+    msk = types.InlineKeyboardButton(text = "Москва", callback_data = "msk")
+    set_city.add(spb,msk)
     bot.send_message(message.chat.id, f"""
 Приветствую тебя,{message.from_user.first_name}.
 
 Меня зовут Mr. Foodsharing , добро пожаловать на мою ферму.
-    """, reply_markup = menu)
+    """, reply_markup = set_city)
 
-    data = take_posts()
-    for post in data:
-        try:
-            if post['attachments'][0]['type']:
-                img_url = post['attachments'][0]['photo']['sizes'][-1]['url']
-            else:
-                img_url = 'pass'
-        except:
-            pass
-        call_b = types.InlineKeyboardMarkup(row_width=1)
-        btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
-        call_b.add(btn1)
-        try:
-            bot.send_message(message.chat.id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
-        except:
-            bot.send_message(message.chat.id,f'{post["text"]}\n\n\n',parse_mode = "html" , reply_markup = call_b)
+    # data = take_posts()
+    # for post in data:
+    #     try:
+    #         if post['attachments'][0]['type']:
+    #             img_url = post['attachments'][0]['photo']['sizes'][-1]['url']
+    #         else:
+    #             img_url = 'pass'
+    #     except:
+    #         pass
+    #     call_b = types.InlineKeyboardMarkup(row_width=1)
+    #     btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
+    #     call_b.add(btn1)
+    #     try:
+    #         bot.send_message(message.chat.id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
+    #     except:
+    #         bot.send_message(message.chat.id,f'{post["text"]}\n\n\n',parse_mode = "html" , reply_markup = call_b)
 
 
 # обработака /help
@@ -125,13 +129,32 @@ def start(message):
 # Обработка текста
 @bot.message_handler(content_types=['text'])
 def body(message):
-    pass
+    if message.text == "Профиль":
+        pass
+    elif message.text == "Разместить объявление":
+        pass
+
+
+# Обработка локации
+@bot.message_handler(content_types=['location'])
+def location(local):
+    if local:
+        bot.send_message(local.from_user.id,local.location)
+
 
 
 # обработка callback
 @bot.callback_query_handler(func=lambda c: True)
 def inline(c):
-    if c.data == "promo":
+    if c.data == "spb":
+        city = "Санкт-Петербург"
+        id = str(c.message.chat.id)
+        create_user(id,city)
+        bot.send_message(c.message.chat.id, c.message.chat.id)
+    elif c.data == "msk":
+        city = "Москва"
+        id = str(c.message.chat.id)
+        create_user(id,city)
         bot.send_message(c.message.chat.id, c.message.chat.id)
 
 
