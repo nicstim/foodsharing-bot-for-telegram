@@ -165,8 +165,6 @@ def take_posts_spb():
                                     except:
                                         bot.send_message(id,f'{post["text"]}', reply_markup = call_b)
                                     try:
-                                        # post_lat = post['attachments'][0]['photo']['lat']
-                                        # post_long = post['attachments'][0]['photo']['long']
                                         bot.send_location(id,post_lat,post_long)
                                     except:
                                         pass
@@ -183,7 +181,7 @@ def take_posts_spb():
                                 post_long = post['attachments'][0]['photo']['long']
                                 post_local = (post_lat, post_long)
                                 user_local = (latitude,longitude)
-                                distance = float(great_circle(post_local, user_local).miles)
+                                distance = float(great_circle(post_local, user_local).miles) * 0,62
                                 if float(radius) >= distance:
                                     try:
                                         call_b = types.InlineKeyboardMarkup(row_width=1)
@@ -208,7 +206,6 @@ def take_posts_spb():
                         subway_result = False
                         original = str(post["text"])
                         for subway in subways:
-                            # print(subway)
                             subway_result = check_sub(subway, original, max_distance=2)
                             if subway_result == True:
                                 original = "text"
@@ -219,7 +216,7 @@ def take_posts_spb():
                                     post_long= float(location.longitude)
                                     post_local = (post_lat, post_long)
                                     user_local = (latitude,longitude)
-                                    distance = float(great_circle(post_local, user_local).miles)
+                                    distance = float(great_circle(post_local, user_local).miles) * 0,62
                                     if float(radius) >= distance:
                                         try:
                                             print(f"subway True {subway}")
@@ -228,7 +225,6 @@ def take_posts_spb():
                                             call_b.add(btn1)
                                             try:
                                                 bot.send_message(id,f'Рядом с вами!\n\n{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
-                                                # bot.send_location(id,post_lat,post_long)
                                             except:
                                                 bot.send_message(id,f'Рядом с вами!\n\n{post["text"]}', reply_markup = call_b)
                                             try:
@@ -250,7 +246,7 @@ def take_posts_spb():
                                         post_long= float(location.longitude)
                                         post_local = (post_lat, post_long)
                                         user_local = (latitude,longitude)
-                                        distance = float(great_circle(post_local, user_local).miles)
+                                        distance = float(great_circle(post_local, user_local).miles) * 0,62
                                         if float(radius) >= distance:
                                             try:
                                                 call_b = types.InlineKeyboardMarkup(row_width=1)
@@ -343,10 +339,39 @@ def read_user(id):
     con.close()
 
 
-# Обновление данных о пользователе
+# Обновление режима
 def update_user(id,push):
-    pass
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    cur.execute(f"UPDATE user SET push = ? WHERE user_id =?",(push,id))
+    con.commit()
+    cur.close()
+    con.close()
 
+
+# Обновление гео данных
+def update_geo(id,lat,long):
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    cur.execute(f"UPDATE user SET longitude ={long} WHERE user_id ={id}")
+    cur.execute(f"UPDATE user SET latitude ={lat} WHERE user_id ={id}")
+    con.commit()
+    cur.close()
+    con.close()
+
+
+def update_radius(id,sum):
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    cur.execute(f'SELECT radius FROM user WHERE user_id={id}')
+    old_radius, =cur.fetchone()
+    cur.close()
+    new_radius = float(old_radius) + sum
+    cur = con.cursor()
+    cur.execute(f"UPDATE user SET radius ={new_radius} WHERE user_id ={id}")
+    con.commit()
+    cur.close()
+    con.close()
 
 
 # user_id администратора бота.
@@ -370,14 +395,15 @@ def start(message):
         print(city)
     except:
         create_user(id)
-
-    # menu = types.ReplyKeyboardMarkup(True, False)
-    # # menu.row("Профиль","Разместить объявление")
+    sticker_id = "CAACAgIAAxkBAAL1717uq_GZnAyHdYRRnXI8nzQ4y6mRAAIBAAPVVI0rGyakprAacEoaBA"
+    menu = types.ReplyKeyboardMarkup(True, False)
+    menu.row("Фильтры")
+    bot.send_sticker(id,"CAACAgIAAxkBAAL1717uq_GZnAyHdYRRnXI8nzQ4y6mRAAIBAAPVVI0rGyakprAacEoaBA")
     bot.send_message(message.chat.id, f"""
-Приветствую тебя,{message.from_user.first_name}.
-
-Меня зовут Mr. Foodsharing , добро пожаловать на мою ферму.
-    """)
+Привет, {message.from_user.first_name}!
+Я хомяк Mr. Foodsharing, и я спасаю еду по истечении срока годности.
+Обычно все продовольствия я забираю сам, но мои хранилища уже заполнены, так что нужна твоя помощь!
+    """,reply_markup = menu)
 
 
 # обработака /help
@@ -386,7 +412,7 @@ def start(message):
     id = str(message.from_user.id)
     bot.send_message(message.chat.id,"""
 Столкнулись с проблемой?
-- Напишите в нашу службу поддержки: @lic_manager
+- Напишите в мою службу поддержки: @lic_manager
     """)
 
 
@@ -394,29 +420,103 @@ def start(message):
 # Обработка текста
 @bot.message_handler(content_types=['text'])
 def body(message):
-    if message.text == "Профиль":
-        pass
+    id = str(message.from_user.id)
+    if message.text == "Фильтры":
+        id = str(message.from_user.id)
+        read_user(id)
+        if latitude == "None":
+            bot.send_sticker(id,"CAACAgIAAxkBAAL18V7usEWgT1DxzJvfgoCmwxPynyGdAAIEAAPVVI0rHcVnmi0DCFgaBA")
+            bot.send_photo(id,"get_geo.jpg",caption = ''''
+Чтобы я смог найти еду рядом с твоим домом, отправь свои геоданные:
+1. Нажми на 📎
+2. В появившемся меню выбери "Геопозиция"
+3. Нажми "Отправить свою геопозицию"
 
-    elif message.text == "Разместить объявление":
-        pass
-
+P.S. Свою локацию можно обновить в любой момент.
+            ''')
+        else:
+            set = types.InlineKeyboardMarkup(row_width = 1)
+            b1 = types.InlineKeyboardButton(text = "Задать радиус", callback_data = "setradius")
+            b2 = types.InlineKeyboardButton(text = "Уведомления", callback_data = "setpush")
+            set.add(b1,b2)
+            bot.send_message(id,"Выбери пункт меню:",reply_markup = set)
 
 # Обработка локации
 @bot.message_handler(content_types=['location'])
-def location(local):
+def user(local):
+    id = str(local.from_user.id)
     if local:
-        menu = types.ReplyKeyboardMarkup(True, False)
-        menu.row("Профиль","Разместить объявление")
         long = local.location.longitude
         lat = local.location.latitude
-        bot.send_message(local.from_user.id,f"Ваше местоположение определенно.\n Широта: {lat} Долгота: {long}",reply_markup = menu)
+        bot.send_sticker(id,"CAACAgIAAxkBAAL1817usFaRTRxEDc57kaZ7zZ7lC53TAAIDAAPVVI0rJCk2H4gEEHQaBA")
+        bot.send_message(id,f"Отлично\n Широта: {lat} Долгота: {long}\n\nОбязательно загляни в фильтры.")
+        update_geo(id,lat,long)
+
 
 
 
 # обработка callback
 @bot.callback_query_handler(func=lambda c: True)
 def inline(c):
-    pass
+    if c.data == "setpush":
+        user_id = str(c.message.chat.id)
+        edit = types.InlineKeyboardMarkup(row_width = 1)
+        read_user(user_id)
+        if push == "ALL":
+            b1 = types.InlineKeyboardButton(text = "Изменить" , callback_data = "setlocal")
+            edit.add(b1)
+            bot.send_message(c.message.chat.id,"Уведомления по всему городу",reply_markup = edit)
+
+        else:
+            b1 = types.InlineKeyboardButton(text = "Изменить" , callback_data = "setall")
+            edit.add(b1)
+            bot.send_message(c.message.chat.id,"Уведомления по радиусу",reply_markup = edit)
+
+    elif c.data == "setlocal":
+        user_id = str(c.message.chat.id)
+        update_user(user_id,"LOCAL")
+        edit = types.InlineKeyboardMarkup(row_width = 1)
+        b1 = types.InlineKeyboardButton(text = "Изменить" , callback_data = "setall")
+        edit.add(b1)
+        bot.edit_message_text(chat_id=c.message.chat.id, message_id=c.message.message_id, text=f"Уведомления по радиусу", reply_markup = edit)
+
+    elif c.data == "setall":
+        user_id = str(c.message.chat.id)
+        update_user(user_id,"ALL")
+        edit = types.InlineKeyboardMarkup(row_width = 1)
+        b1 = types.InlineKeyboardButton(text = "Изменить" , callback_data = "setlocal")
+        edit.add(b1)
+        bot.edit_message_text(chat_id=c.message.chat.id, message_id=c.message.message_id, text="Уведомления по всему городу", reply_markup = edit)
+
+    elif c.data == "setradius":
+        user_id = str(c.message.chat.id)
+        read_user(user_id)
+        bot.send_sticker(user_id,"CAACAgIAAxkBAAL19V7uskRlN5oXrGD5olA7C_8jdVg1AAIFAAPVVI0rEvizaevFqkkaBA")
+        set = types.InlineKeyboardMarkup(row_width = 2)
+        b1 = types.InlineKeyboardButton(text = "-500 метров" , callback_data = "minus")
+        b2 = types.InlineKeyboardButton(text = "+500 метров" , callback_data = "plus")
+        set.add(b1,b2)
+        bot.send_message(user_id,f"Радиус: {radius} км",reply_markup = set)
+
+    elif c.data == "plus":
+        user_id = str(c.message.chat.id)
+        update_radius(user_id,0.5)
+        read_user(user_id)
+        set = types.InlineKeyboardMarkup(row_width = 2)
+        b1 = types.InlineKeyboardButton(text = "-500 метров" , callback_data = "minus")
+        b2 = types.InlineKeyboardButton(text = "+500 метров" , callback_data = "plus")
+        set.add(b1,b2)
+        bot.edit_message_text(chat_id=c.message.chat.id, message_id=c.message.message_id, text=f"Радиус: {radius} км", reply_markup = set)
+
+    elif c.data == "minus":
+        user_id = str(c.message.chat.id)
+        update_radius(user_id,-0.5)
+        read_user(user_id)
+        set = types.InlineKeyboardMarkup(row_width = 2)
+        b1 = types.InlineKeyboardButton(text = "-500 метров" , callback_data = "minus")
+        b2 = types.InlineKeyboardButton(text = "+500 метров" , callback_data = "plus")
+        set.add(b1,b2)
+        bot.edit_message_text(chat_id=c.message.chat.id, message_id=c.message.message_id, text=f"Радиус: {radius} км", reply_markup = set)
 
 bot.skip_pending = True
 bot.polling(none_stop=True, interval=0)
