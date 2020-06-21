@@ -383,7 +383,7 @@ bot = telebot.TeleBot("1213266499:AAERZSzHzsyR2lBtnK3zCgg-ybCoZy-MTac")
 
 
 print("bot start...")
-
+#
 t_0 = threading.Thread(target = take_posts_spb, name = "Парсер", args = ())
 t_0.start()
 
@@ -419,7 +419,7 @@ def start(message):
 
 
 # Обработка текста
-@bot.message_handler(content_types=['text'])
+@bot.message_handler(content_types=['text','photo'])
 def body(message):
     id = str(message.from_user.id)
     if message.text == "Фильтры":
@@ -427,7 +427,7 @@ def body(message):
         read_user(id)
         if latitude == "None":
             bot.send_sticker(id,"CAACAgIAAxkBAAL18V7usEWgT1DxzJvfgoCmwxPynyGdAAIEAAPVVI0rHcVnmi0DCFgaBA")
-            bot.send_photo(id,"get_geo.jpg",caption = ''''
+            bot.send_message(message.chat.id,'''
 Чтобы я смог найти еду рядом с твоим домом, отправь свои геоданные:
 1. Нажми на 📎
 2. В появившемся меню выбери "Геопозиция"
