@@ -96,7 +96,7 @@ def take_posts_spb():
     global post_long
     subways = get_subway()
     streets = get_street()
-    token = '7a7053df7a7053df7a7053dfd97a02e6c777a707a7053df249efa94a70db50ab3b1c74c'
+    token = 'b7fbe45cb7fbe45cb7fbe45c20b7895178bb7fbb7fbe45ce9155ddcc833fccfcc881559'
     version = 5.92
     domain = 'foodsharing_spb'
     count = 5
@@ -181,7 +181,7 @@ def take_posts_spb():
                                 post_long = post['attachments'][0]['photo']['long']
                                 post_local = (post_lat, post_long)
                                 user_local = (latitude,longitude)
-                                distance = float(great_circle(post_local, user_local).miles) * 0,62
+                                distance = float(great_circle(post_local, user_local).miles) * 0.62
                                 if float(radius) >= distance:
                                     try:
                                         call_b = types.InlineKeyboardMarkup(row_width=1)
@@ -216,7 +216,8 @@ def take_posts_spb():
                                     post_long= float(location.longitude)
                                     post_local = (post_lat, post_long)
                                     user_local = (latitude,longitude)
-                                    distance = float(great_circle(post_local, user_local).miles) * 0,62
+                                    distance = float(great_circle(post_local, user_local).miles) * 0.62
+                                    read_user(id)
                                     if float(radius) >= distance:
                                         try:
                                             print(f"subway True {subway}")
@@ -246,7 +247,7 @@ def take_posts_spb():
                                         post_long= float(location.longitude)
                                         post_local = (post_lat, post_long)
                                         user_local = (latitude,longitude)
-                                        distance = float(great_circle(post_local, user_local).miles) * 0,62
+                                        distance = float(great_circle(post_local, user_local).miles) * 0.62
                                         if float(radius) >= distance:
                                             try:
                                                 call_b = types.InlineKeyboardMarkup(row_width=1)
@@ -377,7 +378,7 @@ def update_radius(id,sum):
 # user_id администратора бота.
 admin_id = "270943665"
 
-bot = telebot.TeleBot("1197512104:AAFbg4You7T1DHUOr3Ocklz4Z94qXtfHgoY")
+bot = telebot.TeleBot("1213266499:AAERZSzHzsyR2lBtnK3zCgg-ybCoZy-MTac")
 
 
 

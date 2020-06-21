@@ -1,0 +1,18 @@
+/Цель до 3-ого чекпоинта/
+    * Парсер 24/7
+    * Выдача человеку постов по гео
+    * Сделать тизер
+    * Презентация готова
+
+
+
+
+    C:\Users\nicstim\Desktop\hackathon2020>test.py
+    Traceback (most recent call last):
+      File "C:\Users\nicstim\Desktop\hackathon2020\test.py", line 44, in <module>
+        print(post["long"])
+    KeyError: 'long'
+
+    C:\Users\nicstim\Desktop\hackathon2020>test.py
+    {'response': {'count': 6393, 'items': [{'id': 61169, 'from_id': -70298501, 'owner_id': -70298501, 'date': 1592646893, 'marked_as_ads': 0, 'post_type': 'post', 'text': 'Отдам сегодня до 16.00\nМалая Балканской, 20\nКупчино\n\nВ 1 руки, пишите в ЛС, комментарии не отслеживают\n\nПомидоры в собственном соку домашние, урожай 2019\nСалат из огурцов и перцев, домашние, урожай 2019\nПеченье овсяное постное\nБрусника протеста с сахаром 29.05.20 магазин\nЧай листовой, 1 баночка половина', 'signer_id': 1134125, 'attachments':
+    [{'type': 'photo', 'photo': {'album_id': -7, 'date': 1592645258, 'id': 457250059, 'owner_id': -70298501, 'has_tags': False, 'access_key': 'f02a7c7c9cd42e2c92', 'lat': 59.833581, 'long': 30.381958, 'post_id': 61168, 'sizes': [{'height': 97, 'url': 'https://sun9-31.userapi.com/idFv6JGvsdWbsUFbDSa5wxExl2igB6eEZyfheQ/UJXgOI6SxBc.jpg', 'type': 'm', 'width': 130}, {'height': 98, 'url': 'https://sun9-56.userapi.com/2_INf1dIe38rvXyAM7exalzIhHNr8RNEQf8VIQ/iPVFQDJQYBc.jpg', 'type': 'o', 'width': 130}, 
