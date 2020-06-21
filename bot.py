@@ -96,7 +96,7 @@ def take_posts_spb():
     global post_long
     subways = get_subway()
     streets = get_street()
-    token = 'b7fbe45cb7fbe45cb7fbe45c20b7895178bb7fbb7fbe45ce9155ddcc833fccfcc881559'
+    token = 'b60902c3b60902c3b60902c3feb67bb7eabb609b60902c3e8e7c3a5cdb72f4cbc191a5b'
     version = 5.92
     domain = 'foodsharing_spb'
     count = 5
@@ -153,28 +153,9 @@ def take_posts_spb():
                     try:
                         post_lat = post['attachments'][0]['photo']['lat']
                         post_long = post['attachments'][0]['photo']['long']
-                        if push == "ALL":
-                            print("all")
-                            try:
-                                try:
-                                    call_b = types.InlineKeyboardMarkup(row_width=1)
-                                    btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
-                                    call_b.add(btn1)
-                                    try:
-                                        bot.send_message(id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
-                                    except:
-                                        bot.send_message(id,f'{post["text"]}', reply_markup = call_b)
-                                    try:
-                                        bot.send_location(id,post_lat,post_long)
-                                    except:
-                                        pass
-                                except Exception as e:
-                                    print(e)
 
-                            except:
-                                pass
 
-                        elif push == "LOCAL":
+                        if push == "LOCAL":
                             print("local")
                             try:
                                 post_lat = post['attachments'][0]['photo']['lat']
@@ -263,7 +244,27 @@ def take_posts_spb():
                                                 print(e)
                         else:
                             pass
+                    read_user(id)
+                    if push == "ALL":
+                        print("all")
+                        try:
+                            try:
+                                call_b = types.InlineKeyboardMarkup(row_width=1)
+                                btn1 = types.InlineKeyboardButton(text='Связаться', url = f"vk.com/id{post['signer_id']}" )
+                                call_b.add(btn1)
+                                try:
+                                    bot.send_message(id,f'{post["text"]}\n\n\n<a href="{img_url}">Фото</a>',parse_mode = "html" , reply_markup = call_b)
+                                except:
+                                    bot.send_message(id,f'{post["text"]}', reply_markup = call_b)
+                                try:
+                                    bot.send_location(id,post_lat,post_long)
+                                except:
+                                    pass
+                            except Exception as e:
+                                print(e)
 
+                        except:
+                            pass
                     if iter == 0:
                         last_text = str(post["text"] )
                         print('last text save')
